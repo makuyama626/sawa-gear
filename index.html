@@ -58,6 +58,13 @@
                   background:#fff;font-size:19px;font-weight:700;color:var(--brand);font-family:inherit}
   .stepper span{min-width:26px;text-align:center;font-weight:700}
   details summary{padding:14px;font-size:14px;font-weight:700;color:var(--sub);cursor:pointer}
+  .form{padding:0 14px 14px}
+  .form label{display:block;font-size:11px;font-weight:700;color:var(--sub);margin:10px 0 4px}
+  .form input{width:100%;height:44px;border:1.5px solid var(--line);border-radius:10px;
+              padding:0 10px;font-size:16px;font-family:inherit;background:#fff;color:var(--ink)}
+  .sync{padding:6px 14px 0;font-size:12px;color:var(--sub);text-align:right}
+  .sync.err{color:var(--warn);font-weight:700}
+  .sync.ok{color:var(--brand)}
 </style>
 </head>
 <body>
@@ -75,6 +82,8 @@
 <div id="warn" class="alert" style="background:#fdf6e3;color:#a16207;border-color:#f0e0b8"></div>
 <div id="alert" class="alert"></div>
 
+<div id="sync" class="sync"></div>
+
 <main>
   <div id="list"></div>
   <button class="btn danger" id="reset">この日のチェックを全部戻す</button>
@@ -83,6 +92,26 @@
       <summary>在庫の数を直す（購入・破損・紛失）</summary>
       <div id="edit"></div>
       <div class="note">ここの数字は「持っている数」です。増減すると各サイズのボタンの数が変わります。</div>
+    </details>
+  </div>
+
+  <div class="card">
+    <details id="syncBox">
+      <summary>GitHubに保存する設定</summary>
+      <div class="form">
+        <label>GitHubのユーザー名</label>
+        <input id="s-owner" type="text" autocapitalize="off" autocorrect="off" placeholder="makuyama626">
+        <label>リポジトリ名</label>
+        <input id="s-repo" type="text" autocapitalize="off" autocorrect="off" placeholder="sawa-gear">
+        <label>トークン（github_pat_… で始まる文字列）</label>
+        <input id="s-token" type="password" autocapitalize="off" autocorrect="off" placeholder="貼り付け">
+        <button class="btn" id="s-save">保存して接続テスト</button>
+        <button class="btn" id="s-pull">GitHubから取り込む</button>
+        <button class="btn danger" id="s-clear">接続を解除する</button>
+      </div>
+      <div class="note">
+        トークンはこの端末の中だけに保存され、GitHubには送られません（保存されるのはチェック内容だけです）。
+      </div>
     </details>
   </div>
   <div class="note" style="text-align:center">タップ＝持ち出し／もう一度タップ＝返却</div>
@@ -114,6 +143,7 @@ try{data=JSON.parse(get(KEY))||null;}catch(e){data=null;}
 if(!data||!data.inv) data=JSON.parse(JSON.stringify(DEF));
 if(!data.days) data.days={};
 function save(){set(KEY,JSON.stringify(data));}
+function touch(){data.updated=Date.now();save();if(window.__schedule)window.__schedule();}
 
 function ymd(d){var z=function(n){return(n<10?"0":"")+n;};
   return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate());}
@@ -160,7 +190,7 @@ function render(){
           var b=document.createElement("button");
           b.className="chip"+(on?" on":"");
           b.innerHTML='<span>'+i+'</span>'+(on?'<span class="mk">出</span>':'');
-          b.onclick=function(){ if(day()[key]) delete day()[key]; else day()[key]=1; save(); render(); };
+          b.onclick=function(){ if(day()[key]) delete day()[key]; else day()[key]=1; touch(); render(); };
           chips.appendChild(b);
         })(i);
       }
@@ -190,8 +220,8 @@ function render(){
       var pl=document.createElement("button");pl.textContent="＋";
       m.onclick=function(){ var q=it.sizes[idx][1]; if(q<=0)return;
         Object.keys(data.days).forEach(function(d){delete data.days[d][k(cat,s[0],q)];});
-        it.sizes[idx][1]=q-1;save();render(); };
-      pl.onclick=function(){ it.sizes[idx][1]++;save();render(); };
+        it.sizes[idx][1]=q-1;touch();render(); };
+      pl.onclick=function(){ it.sizes[idx][1]++;touch();render(); };
       w.appendChild(m);w.appendChild(n);w.appendChild(pl);
       t2.appendChild(w);tr.appendChild(t1);tr.appendChild(t2);tbl.appendChild(tr);
     });
@@ -200,14 +230,94 @@ function render(){
 }
 document.getElementById("reset").onclick=function(){
   if(!confirm(jp(cur)+" のチェックを全部戻します。よろしいですか？"))return;
-  data.days[cur]={};save();render();
+  data.days[cur]={};touch();render();
 };
 if(!canSave){
   var w=document.getElementById("warn");
   w.className="alert show";
   w.textContent="この開き方だと、閉じたときに記録が消えます。";
 }
+
+/* ================= GitHub 同期 ================= */
+var SKEY="sawa_sync", cfg={};
+try{ cfg=JSON.parse(get(SKEY))||{}; }catch(e){ cfg={}; }
+var sha=null, timer=null;
+
+function st(msg,cls){ var e=document.getElementById("sync");
+  e.textContent=msg||""; e.className="sync"+(cls?" "+cls:""); }
+function b64enc(s){ var by=new TextEncoder().encode(s),bin="",i;
+  for(i=0;i<by.length;i++) bin+=String.fromCharCode(by[i]); return btoa(bin); }
+function b64dec(b){ var bin=atob(String(b).replace(/\s/g,"")),arr=new Uint8Array(bin.length),i;
+  for(i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i); return new TextDecoder().decode(arr); }
+function url(){ return "https://api.github.com/repos/"+cfg.owner+"/"+cfg.repo+"/contents/data.json"; }
+function hdr(){ return {"Authorization":"Bearer "+cfg.token,"Accept":"application/vnd.github+json"}; }
+function ready(){ return !!(cfg.owner&&cfg.repo&&cfg.token); }
+function stamp(){ return new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"}); }
+
+function pull(loud){
+  if(!ready()) return Promise.resolve();
+  st("読み込み中…");
+  return fetch(url()+"?t="+Date.now(),{headers:hdr(),cache:"no-store"}).then(function(r){
+    if(r.status===404){ sha=null; st(loud?"GitHubにまだ記録がありません（次の変更で作られます）":"", loud?"":""); return; }
+    if(r.status===401||r.status===403) throw new Error("トークンが違うか、権限が足りません");
+    if(!r.ok) throw new Error("読み込みエラー "+r.status);
+    return r.json().then(function(j){
+      sha=j.sha;
+      var remote=JSON.parse(b64dec(j.content));
+      if(!data.updated||(remote.updated||0)>=data.updated){
+        data=remote; if(!data.days)data.days={}; save(); render();
+        st("GitHubから取り込みました "+stamp(),"ok");
+      } else { st("この端末の方が新しいです","ok"); push(); }
+    });
+  }).catch(function(e){ st(e.message,"err"); });
+}
+function push(){
+  if(!ready()) return;
+  data.updated=Date.now(); save();
+  st("保存中…");
+  var body={message:"update "+new Date().toISOString(),content:b64enc(JSON.stringify(data))};
+  if(sha) body.sha=sha;
+  fetch(url(),{method:"PUT",headers:hdr(),body:JSON.stringify(body)}).then(function(r){
+    if(r.status===409||r.status===422){        /* 他の端末が先に更新 → 取り直して再送 */
+      return fetch(url()+"?t="+Date.now(),{headers:hdr(),cache:"no-store"}).then(function(r2){
+        return r2.ok?r2.json():null; }).then(function(j){
+          sha=j?j.sha:null;
+          var b2={message:"update",content:b64enc(JSON.stringify(data))};
+          if(sha) b2.sha=sha;
+          return fetch(url(),{method:"PUT",headers:hdr(),body:JSON.stringify(b2)});
+        });
+    }
+    return r;
+  }).then(function(r){
+    if(!r) return;
+    if(r.status===401||r.status===403){ st("トークンが違うか、権限が足りません","err"); return; }
+    if(!r.ok){ st("保存エラー "+r.status,"err"); return; }
+    return r.json().then(function(j){ sha=j.content.sha; st("GitHubに保存しました "+stamp(),"ok"); });
+  }).catch(function(e){ st("通信できません（電波を確認）","err"); });
+}
+function schedule(){ if(!ready())return; clearTimeout(timer); st("…"); timer=setTimeout(push,1500); }
+window.__schedule=schedule;
+
+
+document.getElementById("s-owner").value=cfg.owner||"";
+document.getElementById("s-repo").value=cfg.repo||"";
+document.getElementById("s-token").value=cfg.token||"";
+document.getElementById("s-save").onclick=function(){
+  cfg={owner:document.getElementById("s-owner").value.trim(),
+       repo:document.getElementById("s-repo").value.trim(),
+       token:document.getElementById("s-token").value.trim()};
+  if(!ready()){ alert("3つとも入力してください。"); return; }
+  set(SKEY,JSON.stringify(cfg));
+  pull(true).then(function(){ if(!sha) push(); });
+};
+document.getElementById("s-pull").onclick=function(){ if(!ready()){alert("先に設定を保存してください。");return;} sha=null; data.updated=0; pull(true); };
+document.getElementById("s-clear").onclick=function(){
+  if(!confirm("この端末の接続設定を消します（GitHub側の記録は残ります）。")) return;
+  cfg={}; set(SKEY,"{}"); document.getElementById("s-token").value=""; st("接続を解除しました");
+};
+
 render();
+if(ready()) pull(false); else st("");
 })();
 </script>
 </body>
