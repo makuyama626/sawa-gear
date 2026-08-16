@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="装備チェック">
+<meta name="theme-color" content="#1f4d3d">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAADJElEQVR42u3csVFbQRCA4ac39AGNQAfQiBNnrsGZEzdCCVRCKQ6ceMYCJM3b29u97w+dMLr7tKcTfpzunx836Vy7JRAcgkNwCA7BITgEh+AQHIJDgkNwCA7BITgEh+AQHIJDcEhwCA7BITgEh+AQHIJDcAgOCQ7Boeu7S/zZ769vNuCSHl6eUn7uafyffWKiipKhOLCoRWQno1zDVnLE5MCi6AjZyTBCXGU12bHyOe2sG1qzCRG3jIE4PnlJWJRYz4RjhYwq67YPZk5GhI+gT6Z7b/vmh9uK6uA4O+WMjdDhEXGymByCQ3AIDsEhOASH4BAcgkNwSHAIDsEhONr0/ec3OPShjEI+4EiYGVV8wJFzmpTwAUfa54z5fcCR+Ql0ch9wJN9NZvYBh/stHHNv+Zw+4JhiGPz68RsOMsrIgIMMOMiAgww4yICjr4wqwZEgo8TYgIMMOMiAgww4SlZOBhwurnCQAQcZcJABBxlwxF0dyVgCR+6zYmvKqIEj91mxrr9U64Aj91mxFb4GrYoj91mxxWVMjSP3WTEy5sWR+6wYGfPiuHxvJvm02FLGjDiu3e/DfSx7cS2A44a1PtAHGbMfK1k+yKjxgXS8DzIqXWVH+iCjGI5hPsgoiWOADzIK4wj1sfIv1ZrgCPLha9AmOA73QUYrHAf6IKMhjkN8kNEWxzb8+7FlZWxF//f5zT5cXPvjGDM/FpexlX5uJXTzyNiqP9QUtIVkdMARsZFk9MFx7HaS0Q3HUZtKRk8cthaOQB9sNcdx8x6TsQSOG3aajIVwXLXfZCyH48JdJ2NRHF/uPRlfdtf75f0V8O+v3JiAw5BwrAgOwSE4BIfgEByCQ4JDcAgOwSE41BjHw8vT///4/vpmuQ/p7EqeXXOTQy2OFcOj1hpG4fhoyvERISPiTMk5Vviosm6n++fHrNcT5H01FnHLGIvDnIgu9A3mtqI8HM6Oumsbfqw4X+q+5fZmr4eMkpPDCCn3BkvAQUmVoZuJQ6vfVgSH4BAcEhyCQ3AIDsEhOASH4BAcgkNwSHAIDsEhOASH4BAcgkNwCA4JDsEhOBTUH0cwVBp9C/fhAAAAAElFTkSuQmCC">
+<title>装備チェック｜沢散歩</title>
+<style>
+  :root{--bg:#f4f6f4;--ink:#16211d;--sub:#5d6b64;--line:#dfe5e0;--brand:#1f4d3d;
+        --brand-soft:#e6efe9;--out:#c2410c;--out-soft:#fdece2;--warn:#b91c1c;--warn-soft:#fdeaea;--ng:#94a3b8}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;
+       background:var(--bg);color:var(--ink);font-size:16px;line-height:1.5;padding-bottom:40px}
+  header{position:sticky;top:0;z-index:20;background:var(--brand);color:#fff;
+         padding:calc(10px + env(safe-area-inset-top)) 14px 10px}
+  .htitle{font-size:15px;font-weight:700}
+  .datebar{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .datebar button{background:rgba(255,255,255,.16);color:#fff;border:0;border-radius:10px;
+                  width:44px;height:44px;font-size:20px;font-weight:700}
+  .datebar input{flex:1;height:44px;border:0;border-radius:10px;padding:0 12px;
+                 font-size:17px;font-family:inherit;background:#fff;color:var(--ink)}
+  .today{font-size:14px !important;width:auto !important;padding:0 12px}
+  .alert{margin:12px 14px 0;padding:12px 14px;border-radius:14px;background:var(--warn-soft);
+         color:var(--warn);font-size:14px;font-weight:700;border:1px solid #f3c9c9;display:none}
+  .alert.show{display:block}
+  main{padding:0 14px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;margin-top:12px;overflow:hidden}
+  .card h2{margin:0;padding:12px 14px;font-size:15px;font-weight:700;background:#fbfcfb;
+           border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline}
+  .card h2 .sum{font-size:13px;font-weight:600;color:var(--sub)}
+  .row{padding:10px 14px;border-bottom:1px solid #eef1ef}
+  .row:last-child{border-bottom:0}
+  .rowhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .size{font-weight:700;font-size:15px}
+  .left{font-size:13px;color:var(--sub);font-variant-numeric:tabular-nums}
+  .left b{font-size:17px;color:var(--ink)}
+  .left.zero,.left.zero b{color:var(--warn)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{min-width:54px;height:46px;padding:0 12px;border-radius:11px;border:1.5px solid var(--line);
+        background:#fff;color:var(--sub);font-size:15px;font-weight:700;font-family:inherit;
+        display:inline-flex;align-items:center;justify-content:center;gap:5px}
+  .chip.on{background:var(--out-soft);border-color:#f0b48d;color:var(--out)}
+  .chip .mk{font-size:11px}
+  .btn{display:block;width:100%;padding:14px;border-radius:12px;border:1.5px solid var(--line);
+       background:#fff;color:var(--ink);font-family:inherit;font-size:15px;font-weight:700;margin-top:12px}
+  .btn.danger{color:var(--warn);border-color:#f0cccc}
+  .note{font-size:12px;color:var(--sub);padding:14px;line-height:1.7}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  td{padding:8px 14px;border-bottom:1px solid #eef1ef}
+  td.n{text-align:right}
+  .stepper{display:inline-flex;align-items:center;gap:12px}
+  .stepper button{width:38px;height:38px;border-radius:9px;border:1.5px solid var(--line);
+                  background:#fff;font-size:19px;font-weight:700;color:var(--brand);font-family:inherit}
+  .stepper span{min-width:26px;text-align:center;font-weight:700}
+  details summary{padding:14px;font-size:14px;font-weight:700;color:var(--sub);cursor:pointer}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="htitle">沢散歩 装備チェック</div>
+  <div class="datebar">
+    <button id="prev">‹</button>
+    <input type="date" id="date">
+    <button id="next">›</button>
+    <button id="today" class="today">今日</button>
+  </div>
+</header>
+
+<div id="warn" class="alert" style="background:#fdf6e3;color:#a16207;border-color:#f0e0b8"></div>
+<div id="alert" class="alert"></div>
+
+<main>
+  <div id="list"></div>
+  <button class="btn danger" id="reset">この日のチェックを全部戻す</button>
+  <div class="card">
+    <details>
+      <summary>在庫の数を直す（購入・破損・紛失）</summary>
+      <div id="edit"></div>
+      <div class="note">ここの数字は「持っている数」です。増減すると各サイズのボタンの数が変わります。</div>
+    </details>
+  </div>
+  <div class="note" style="text-align:center">タップ＝持ち出し／もう一度タップ＝返却</div>
+</main>
+
+<script>
+(function(){
+"use strict";
+var mem={},canSave=true;
+try{localStorage.setItem("_t","1");localStorage.removeItem("_t");}catch(e){canSave=false;}
+function get(k){try{return localStorage.getItem(k);}catch(e){return mem[k]||null;}}
+function set(k,v){try{localStorage.setItem(k,v);}catch(e){canSave=false;mem[k]=v;}}
+var KEY="sawa_simple";
+
+var DEF={
+  inv:{
+    boots:{label:"ダイビングブーツ",unit:"足",
+      sizes:[["22cm",2],["23cm",3],["24cm",2],["25cm",2],["26cm",2],["27cm",2],["28cm",2],["29cm",2]]},
+    lj:{label:"ライフジャケット",unit:"着",
+      sizes:[["大人S",2],["大人M(白)",2],["大人L(青)",2],["別注XL(青)",1],["女性用別注M(赤)",1],
+             ["子供M 105-125",2],["子供L 125-155",2]]},
+    tights:{label:"パドリングタイツ",unit:"本",
+      sizes:[["ウイメンズS",2],["メンズS",1],["メンズM",2],["メンズL",3],["ウイメンズXL",1],["メンズXL",3]]}
+  },
+  days:{}
+};
+var data;
+try{data=JSON.parse(get(KEY))||null;}catch(e){data=null;}
+if(!data||!data.inv) data=JSON.parse(JSON.stringify(DEF));
+if(!data.days) data.days={};
+function save(){set(KEY,JSON.stringify(data));}
+
+function ymd(d){var z=function(n){return(n<10?"0":"")+n;};
+  return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate());}
+var WD=["日","月","火","水","木","金","土"];
+function jp(s){var p=s.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]);
+  return (+p[1])+"月"+(+p[2])+"日（"+WD[d.getDay()]+"）";}
+var cur=ymd(new Date());
+var dateEl=document.getElementById("date");dateEl.value=cur;
+function shift(n){var p=cur.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]);
+  d.setDate(d.getDate()+n);cur=ymd(d);dateEl.value=cur;render();}
+document.getElementById("prev").onclick=function(){shift(-1);};
+document.getElementById("next").onclick=function(){shift(1);};
+document.getElementById("today").onclick=function(){cur=ymd(new Date());dateEl.value=cur;render();};
+dateEl.onchange=function(){if(dateEl.value){cur=dateEl.value;render();}};
+
+function day(){if(!data.days[cur])data.days[cur]={};return data.days[cur];}
+function k(c,s,i){return c+"|"+s+"|"+i;}
+
+function render(){
+  var list=document.getElementById("list");list.innerHTML="";
+  var zero=[];
+  Object.keys(data.inv).forEach(function(cat){
+    var it=data.inv[cat],out=0,tot=0;
+    it.sizes.forEach(function(s){tot+=s[1];
+      for(var i=1;i<=s[1];i++) if(day()[k(cat,s[0],i)]) out++;});
+    var card=document.createElement("div");card.className="card";
+    var h=document.createElement("h2");
+    h.innerHTML='<span>'+it.label+'</span><span class="sum">持出 '+out+' / '+tot+it.unit+'</span>';
+    card.appendChild(h);
+    it.sizes.forEach(function(s){
+      var size=s[0],qty=s[1],used=0,i;
+      for(i=1;i<=qty;i++) if(day()[k(cat,size,i)]) used++;
+      var left=qty-used;
+      if(left<=0&&qty>0) zero.push(it.label+" "+size);
+      var row=document.createElement("div");row.className="row";
+      var head=document.createElement("div");head.className="rowhead";
+      head.innerHTML='<span class="size">'+size+'</span>'+
+        '<span class="left'+(left<=0?" zero":"")+'">残り <b>'+left+'</b> / '+qty+it.unit+'</span>';
+      row.appendChild(head);
+      var chips=document.createElement("div");chips.className="chips";
+      for(i=1;i<=qty;i++){
+        (function(i){
+          var key=k(cat,size,i),on=!!day()[key];
+          var b=document.createElement("button");
+          b.className="chip"+(on?" on":"");
+          b.innerHTML='<span>'+i+'</span>'+(on?'<span class="mk">出</span>':'');
+          b.onclick=function(){ if(day()[key]) delete day()[key]; else day()[key]=1; save(); render(); };
+          chips.appendChild(b);
+        })(i);
+      }
+      row.appendChild(chips);card.appendChild(row);
+    });
+    list.appendChild(card);
+  });
+
+  var al=document.getElementById("alert");
+  if(zero.length){ al.className="alert show";
+    al.innerHTML="⚠️ 在庫切れ<br>"+zero.join("<br>"); }
+  else { al.className="alert"; al.innerHTML=""; }
+
+  var e=document.getElementById("edit");e.innerHTML="";
+  Object.keys(data.inv).forEach(function(cat){
+    var it=data.inv[cat],tbl=document.createElement("table");
+    var tr0=document.createElement("tr");
+    tr0.innerHTML='<td colspan="2" style="font-weight:700;background:#fbfcfb;font-size:13px">'+it.label+'</td>';
+    tbl.appendChild(tr0);
+    it.sizes.forEach(function(s,idx){
+      var tr=document.createElement("tr");
+      var t1=document.createElement("td");t1.textContent=s[0];
+      var t2=document.createElement("td");t2.className="n";
+      var w=document.createElement("span");w.className="stepper";
+      var m=document.createElement("button");m.textContent="−";
+      var n=document.createElement("span");n.textContent=s[1];
+      var pl=document.createElement("button");pl.textContent="＋";
+      m.onclick=function(){ var q=it.sizes[idx][1]; if(q<=0)return;
+        Object.keys(data.days).forEach(function(d){delete data.days[d][k(cat,s[0],q)];});
+        it.sizes[idx][1]=q-1;save();render(); };
+      pl.onclick=function(){ it.sizes[idx][1]++;save();render(); };
+      w.appendChild(m);w.appendChild(n);w.appendChild(pl);
+      t2.appendChild(w);tr.appendChild(t1);tr.appendChild(t2);tbl.appendChild(tr);
+    });
+    e.appendChild(tbl);
+  });
+}
+document.getElementById("reset").onclick=function(){
+  if(!confirm(jp(cur)+" のチェックを全部戻します。よろしいですか？"))return;
+  data.days[cur]={};save();render();
+};
+if(!canSave){
+  var w=document.getElementById("warn");
+  w.className="alert show";
+  w.textContent="この開き方だと、閉じたときに記録が消えます。";
+}
+render();
+})();
+</script>
+</body>
+</html>
