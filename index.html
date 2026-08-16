@@ -84,6 +84,8 @@
   .form label{display:block;font-size:11px;font-weight:700;color:var(--sub);margin:10px 0 4px}
   .form input{width:100%;height:44px;border:1.5px solid var(--line);border-radius:10px;
               padding:0 10px;font-size:16px;font-family:inherit;background:#fff;color:var(--ink)}
+  textarea{width:100%;height:90px;border:1.5px solid var(--line);border-radius:10px;padding:9px;
+           font-size:15px;font-family:inherit;color:var(--ink);background:#fff;line-height:1.5}
   .sync{padding:4px 14px 0;font-size:11px;color:var(--sub);text-align:right;min-height:1px}
   .sync.err{color:var(--warn);font-weight:700}
   .sync.ok{color:var(--brand)}
@@ -118,7 +120,29 @@
 
 <main>
   <div id="list"></div>
+  <div class="card">
+    <h2><span>この日のメモ</span><span class="sum" id="memoDate"></span></h2>
+    <div style="padding:10px 12px 12px">
+      <textarea id="memo" placeholder="天候、水位、破損・紛失、引き継ぎなど"></textarea>
+    </div>
+  </div>
+
   <button class="btn danger" id="reset">この日のチェックを全部戻す</button>
+
+  <div class="card">
+    <details>
+      <summary>記録をエクセル用に書き出す</summary>
+      <div class="form">
+        <button class="btn" id="csvDl">CSVをダウンロード（全期間）</button>
+        <button class="btn" id="csvGh">GitHubにCSVを保存</button>
+        <button class="btn" id="csvCp">CSVをコピー</button>
+      </div>
+      <div class="note">
+        CSVはエクセルでそのまま開けます。iPhoneでうまく落とせないときは「GitHubに保存」を使い、
+        パソコンから <b>sawa-gear</b> の <b>data.csv</b> を開いてください。
+      </div>
+    </details>
+  </div>
   <div class="card">
     <details>
       <summary>在庫の数を直す（購入・破損・紛失）</summary>
@@ -181,14 +205,26 @@ function gnames(){ if(!data.gn)data.gn={}; if(!data.gn[cur])data.gn[cur]={}; ret
 function gname(g){ var n=(gnames()[g]||"").trim(); return n||g; }
 function glabel(v){ return (v==="A"||v==="B")?gname(v).slice(0,4):"出"; }
 function refreshGroupLabels(){
-  ["A","B"].forEach(function(g){
+  document.getElementById("memo").oninput=function(){
+  if(!data.memo) data.memo={};
+  var v=document.getElementById("memo").value;
+  if(v) data.memo[cur]=v; else delete data.memo[cur];
+  touch();
+};
+
+["A","B"].forEach(function(g){
   var el=document.getElementById("gn-"+g);
   el.oninput=function(){ gnames()[g]=el.value; touch(); render(); };
 });
-refreshGroupInputs();
+refreshGroupInputs();refreshMemo();
 
 Array.prototype.forEach.call(document.querySelectorAll(".gb"),function(b){
     var t=b.querySelector(".gname"); if(t) t.textContent=gname(b.dataset.g).slice(0,5); });
+}
+function memoOf(){ if(!data.memo)data.memo={}; return data.memo[cur]||""; }
+function refreshMemo(){
+  document.getElementById("memo").value=memoOf();
+  document.getElementById("memoDate").textContent=jp(cur);
 }
 function refreshGroupInputs(){
   document.getElementById("gn-A").value=gnames().A||"";
@@ -204,11 +240,11 @@ function jp(s){var p=s.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]);
 var cur=ymd(new Date());
 var dateEl=document.getElementById("date");dateEl.value=cur;
 function shift(n){var p=cur.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]);
-  d.setDate(d.getDate()+n);cur=ymd(d);dateEl.value=cur;refreshGroupInputs();render();}
+  d.setDate(d.getDate()+n);cur=ymd(d);dateEl.value=cur;refreshGroupInputs();refreshMemo();render();}
 document.getElementById("prev").onclick=function(){shift(-1);};
 document.getElementById("next").onclick=function(){shift(1);};
-document.getElementById("today").onclick=function(){cur=ymd(new Date());dateEl.value=cur;refreshGroupInputs();render();};
-dateEl.onchange=function(){if(dateEl.value){cur=dateEl.value;refreshGroupInputs();render();}};
+document.getElementById("today").onclick=function(){cur=ymd(new Date());dateEl.value=cur;refreshGroupInputs();refreshMemo();render();};
+dateEl.onchange=function(){if(dateEl.value){cur=dateEl.value;refreshGroupInputs();refreshMemo();render();}};
 
 function day(){if(!data.days[cur])data.days[cur]={};return data.days[cur];}
 function k(c,s,i){return c+"|"+s+"|"+i;}
@@ -291,11 +327,18 @@ function render(){
     e.appendChild(tbl);
   });
 }
+document.getElementById("memo").oninput=function(){
+  if(!data.memo) data.memo={};
+  var v=document.getElementById("memo").value;
+  if(v) data.memo[cur]=v; else delete data.memo[cur];
+  touch();
+};
+
 ["A","B"].forEach(function(g){
   var el=document.getElementById("gn-"+g);
   el.oninput=function(){ gnames()[g]=el.value; touch(); render(); };
 });
-refreshGroupInputs();
+refreshGroupInputs();refreshMemo();
 
 Array.prototype.forEach.call(document.querySelectorAll(".gb"),function(b){
   if(b.dataset.g===grp) b.classList.add("sel"); else b.classList.remove("sel");
@@ -315,6 +358,35 @@ if(!canSave){
   w.className="alert show";
   w.textContent="この開き方だと、閉じたときに記録が消えます。";
 }
+
+/* ================= CSV 書き出し ================= */
+function q(v){ v=(v==null?"":String(v)); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function buildCSV(){
+  var rows=[["日付","曜日","品目","サイズ","番号","グループ","グループ名","メモ"]];
+  var days=Object.keys(data.days||{}).concat(Object.keys(data.memo||{}));
+  days=days.filter(function(v,i){return days.indexOf(v)===i;}).sort();
+  days.forEach(function(d){
+    var pp=d.split("-"), wd=WD[new Date(+pp[0],+pp[1]-1,+pp[2]).getDay()];
+    var memo=(data.memo&&data.memo[d])||"";
+    var names=(data.gn&&data.gn[d])||{};
+    var n=0;
+    Object.keys(data.inv).forEach(function(cat){
+      var it=data.inv[cat];
+      it.sizes.forEach(function(sz){
+        for(var i=1;i<=sz[1];i++){
+          var v=(data.days[d]||{})[cat+"|"+sz[0]+"|"+i];
+          if(!v) continue;
+          n++;
+          var g=(v==="A"||v==="B")?v:"";
+          rows.push([d,wd,it.label,sz[0],i,g,(g?(names[g]||g):""),memo]);
+        }
+      });
+    });
+    if(!n&&memo) rows.push([d,wd,"","","","","",memo]);
+  });
+  return rows.map(function(r){ return r.map(q).join(","); }).join("\r\n");
+}
+function csvName(){ return "sawa-gear_"+ymd(new Date()).replace(/-/g,"")+".csv"; }
 
 /* ================= GitHub 同期 ================= */
 var SKEY="sawa_sync", cfg={};
@@ -343,7 +415,7 @@ function pull(loud){
       sha=j.sha;
       var remote=JSON.parse(b64dec(j.content));
       if(!data.updated||(remote.updated||0)>=data.updated){
-        data=remote; if(!data.days)data.days={}; save(); render();
+        data=remote; if(!data.days)data.days={}; save(); refreshGroupInputs(); refreshMemo(); render();
         st("GitHubから取り込みました "+stamp(),"ok");
       } else { st("この端末の方が新しいです","ok"); push(); }
     });
@@ -393,6 +465,41 @@ document.getElementById("s-pull").onclick=function(){ if(!ready()){alert("先に
 document.getElementById("s-clear").onclick=function(){
   if(!confirm("この端末の接続設定を消します（GitHub側の記録は残ります）。")) return;
   cfg={}; set(SKEY,"{}"); document.getElementById("s-token").value=""; st("接続を解除しました");
+};
+
+document.getElementById("csvDl").onclick=function(){
+  var csv=buildCSV();
+  try{
+    var blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob); a.download=csvName();
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1500);
+    st("CSVを書き出しました","ok");
+  }catch(e){ alert("ダウンロードできませんでした。「CSVをコピー」をお使いください。"); }
+};
+document.getElementById("csvCp").onclick=function(){
+  var csv=buildCSV();
+  if(navigator.clipboard&&navigator.clipboard.writeText)
+    navigator.clipboard.writeText(csv).then(function(){ st("CSVをコピーしました","ok"); },
+      function(){ alert(csv); });
+  else alert(csv);
+};
+document.getElementById("csvGh").onclick=function(){
+  if(!ready()){ alert("先にGitHubの設定を保存してください。"); return; }
+  st("CSVを保存中…");
+  var u="https://api.github.com/repos/"+cfg.owner+"/"+cfg.repo+"/contents/data.csv";
+  fetch(u+"?t="+Date.now(),{headers:hdr(),cache:"no-store"}).then(function(r){
+    return r.ok?r.json().then(function(j){return j.sha;}):null;
+  }).then(function(sh){
+    var body={message:"csv "+new Date().toISOString(),content:b64enc("\ufeff"+buildCSV())};
+    if(sh) body.sha=sh;
+    return fetch(u,{method:"PUT",headers:hdr(),body:JSON.stringify(body)});
+  }).then(function(r){
+    if(r.ok) st("GitHubに data.csv を保存しました "+stamp(),"ok");
+    else if(r.status===404) st("リポジトリ名か、トークンの権限が違います","err");
+    else st("CSV保存エラー "+r.status,"err");
+  }).catch(function(){ st("通信できません","err"); });
 };
 
 render();
