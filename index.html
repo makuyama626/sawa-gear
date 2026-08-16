@@ -17,35 +17,57 @@
   body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;
        background:var(--bg);color:var(--ink);font-size:16px;line-height:1.5;padding-bottom:40px}
   header{position:sticky;top:0;z-index:20;background:var(--brand);color:#fff;
-         padding:calc(10px + env(safe-area-inset-top)) 14px 10px}
-  .htitle{font-size:15px;font-weight:700}
-  .datebar{display:flex;align-items:center;gap:8px;margin-top:8px}
-  .datebar button{background:rgba(255,255,255,.16);color:#fff;border:0;border-radius:10px;
-                  width:44px;height:44px;font-size:20px;font-weight:700}
-  .datebar input{flex:1;height:44px;border:0;border-radius:10px;padding:0 12px;
-                 font-size:17px;font-family:inherit;background:#fff;color:var(--ink)}
+         padding:calc(8px + env(safe-area-inset-top)) 14px 8px}
+  .htitle{font-size:13px;font-weight:700;opacity:.9}
+  .datebar{display:flex;align-items:center;gap:6px;margin-top:6px}
+  .datebar button{background:rgba(255,255,255,.16);color:#fff;border:0;border-radius:9px;
+                  width:40px;height:40px;font-size:19px;font-weight:700}
+  .datebar input{flex:1;height:40px;border:0;border-radius:9px;padding:0 10px;
+                 font-size:16px;font-family:inherit;background:#fff;color:var(--ink)}
   .today{font-size:14px !important;width:auto !important;padding:0 12px}
-  .alert{margin:12px 14px 0;padding:12px 14px;border-radius:14px;background:var(--warn-soft);
-         color:var(--warn);font-size:14px;font-weight:700;border:1px solid #f3c9c9;display:none}
+  .alert{margin:8px 14px 0;padding:8px 12px;border-radius:12px;background:var(--warn-soft);
+         color:var(--warn);font-size:13px;font-weight:700;border:1px solid #f3c9c9;display:none;line-height:1.45}
   .alert.show{display:block}
   main{padding:0 14px}
-  .card{background:#fff;border:1px solid var(--line);border-radius:14px;margin-top:12px;overflow:hidden}
-  .card h2{margin:0;padding:12px 14px;font-size:15px;font-weight:700;background:#fbfcfb;
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;margin-top:10px;overflow:hidden}
+  .card h2{margin:0;padding:8px 12px;font-size:14px;font-weight:700;background:#fbfcfb;
            border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline}
-  .card h2 .sum{font-size:13px;font-weight:600;color:var(--sub)}
-  .row{padding:10px 14px;border-bottom:1px solid #eef1ef}
+  .card h2 .sum{font-size:12px;font-weight:600;color:var(--sub)}
+  .row{padding:5px 10px;border-bottom:1px solid #eef1ef;display:flex;align-items:center;
+       gap:8px;flex-wrap:wrap}
   .row:last-child{border-bottom:0}
-  .rowhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-  .size{font-weight:700;font-size:15px}
-  .left{font-size:13px;color:var(--sub);font-variant-numeric:tabular-nums}
-  .left b{font-size:17px;color:var(--ink)}
+  .size{font-weight:700;font-size:13px;flex:none;min-width:4.2em}
+  .left{font-size:11px;color:var(--sub);font-variant-numeric:tabular-nums;flex:none;margin-left:auto}
+  .left b{font-size:15px;color:var(--ink)}
   .left.zero,.left.zero b{color:var(--warn)}
-  .chips{display:flex;flex-wrap:wrap;gap:8px}
-  .chip{min-width:54px;height:46px;padding:0 12px;border-radius:11px;border:1.5px solid var(--line);
-        background:#fff;color:var(--sub);font-size:15px;font-weight:700;font-family:inherit;
-        display:inline-flex;align-items:center;justify-content:center;gap:5px}
-  .chip.on{background:var(--out-soft);border-color:#f0b48d;color:var(--out)}
-  .chip .mk{font-size:11px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;flex:1 1 auto}
+  .chip{min-width:40px;height:38px;padding:0 9px;border-radius:9px;border:1.5px solid var(--line);
+        background:#fff;color:var(--sub);font-size:14px;font-weight:700;font-family:inherit;
+        display:inline-flex;align-items:center;justify-content:center;gap:4px}
+  .chip.a{background:#fdece2;border-color:#f0b48d;color:#c2410c}
+  .chip.b{background:#e3ecfd;border-color:#9dbaf3;color:#1d4ed8}
+  .chip.x{background:#eef1ef;border-color:#c9d2cc;color:#4b5563}
+  .grpbar{display:flex;gap:6px;align-items:center;padding:8px 14px 0}
+  .grpbar .lb{font-size:12px;font-weight:700;color:var(--sub);margin-right:2px}
+  .gb{flex:1;height:38px;border-radius:10px;border:2px solid var(--line);background:#fff;
+      font-family:inherit;font-size:14px;font-weight:700;color:var(--sub);
+      display:inline-flex;align-items:center;justify-content:center;gap:6px}
+  .gb .dot{width:12px;height:12px;border-radius:50%}
+  .gb[data-g="A"] .dot{background:#c2410c}
+  .gb[data-g="B"] .dot{background:#1d4ed8}
+  .gb[data-g="X"] .dot{background:#9aa5a0}
+  .gb.sel[data-g="A"]{border-color:#c2410c;background:#fdece2;color:#c2410c}
+  .gb.sel[data-g="B"]{border-color:#1d4ed8;background:#e3ecfd;color:#1d4ed8}
+  .gb.sel[data-g="X"]{border-color:#4b5563;background:#eef1ef;color:#4b5563}
+  .gnames{display:flex;gap:6px;padding:6px 14px 0}
+  .gnames .gwrap{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:6px;background:#fff;
+                 border:1.5px solid var(--line);border-radius:9px;padding:0 9px;height:34px}
+  .gnames .gwrap .dot{width:10px;height:10px;border-radius:50%;flex:none}
+  .gnames .gwrap.a .dot{background:#c2410c}
+  .gnames .gwrap.b .dot{background:#1d4ed8}
+  .gnames input{flex:1 1 0;min-width:0;width:100%;border:0;outline:0;height:32px;font-size:14px;
+                font-family:inherit;background:transparent;color:var(--ink)}
+  .chip .mk{font-size:10px}
   .btn{display:block;width:100%;padding:14px;border-radius:12px;border:1.5px solid var(--line);
        background:#fff;color:var(--ink);font-family:inherit;font-size:15px;font-weight:700;margin-top:12px}
   .btn.danger{color:var(--warn);border-color:#f0cccc}
@@ -62,7 +84,7 @@
   .form label{display:block;font-size:11px;font-weight:700;color:var(--sub);margin:10px 0 4px}
   .form input{width:100%;height:44px;border:1.5px solid var(--line);border-radius:10px;
               padding:0 10px;font-size:16px;font-family:inherit;background:#fff;color:var(--ink)}
-  .sync{padding:6px 14px 0;font-size:12px;color:var(--sub);text-align:right}
+  .sync{padding:4px 14px 0;font-size:11px;color:var(--sub);text-align:right;min-height:1px}
   .sync.err{color:var(--warn);font-weight:700}
   .sync.ok{color:var(--brand)}
 </style>
@@ -78,6 +100,16 @@
     <button id="today" class="today">今日</button>
   </div>
 </header>
+
+<div class="grpbar">
+  <button class="gb sel" data-g="A"><span class="dot"></span><span class="gname">A</span></button>
+  <button class="gb" data-g="B"><span class="dot"></span><span class="gname">B</span></button>
+  <button class="gb" data-g="X"><span class="dot"></span>なし</button>
+</div>
+<div class="gnames">
+  <span class="gwrap a"><span class="dot"></span><input id="gn-A" type="text" placeholder="Aの苗字"></span>
+  <span class="gwrap b"><span class="dot"></span><input id="gn-B" type="text" placeholder="Bの苗字"></span>
+</div>
 
 <div id="warn" class="alert" style="background:#fdf6e3;color:#a16207;border-color:#f0e0b8"></div>
 <div id="alert" class="alert"></div>
@@ -114,7 +146,7 @@
       </div>
     </details>
   </div>
-  <div class="note" style="text-align:center">タップ＝持ち出し／もう一度タップ＝返却</div>
+  <div class="note" style="text-align:center">上でグループを選んでからタップ＝そのグループへ持ち出し<br>同じグループでもう一度タップ＝返却／別グループを選んでタップ＝付け替え</div>
 </main>
 
 <script>
@@ -143,6 +175,25 @@ try{data=JSON.parse(get(KEY))||null;}catch(e){data=null;}
 if(!data||!data.inv) data=JSON.parse(JSON.stringify(DEF));
 if(!data.days) data.days={};
 function save(){set(KEY,JSON.stringify(data));}
+var GKEY="sawa_grp", grp=get(GKEY)||"A";
+function gcls(v){ return v==="B"?"b":(v==="A"?"a":"x"); }
+function gnames(){ if(!data.gn)data.gn={}; if(!data.gn[cur])data.gn[cur]={}; return data.gn[cur]; }
+function gname(g){ var n=(gnames()[g]||"").trim(); return n||g; }
+function glabel(v){ return (v==="A"||v==="B")?gname(v).slice(0,4):"出"; }
+function refreshGroupLabels(){
+  ["A","B"].forEach(function(g){
+  var el=document.getElementById("gn-"+g);
+  el.oninput=function(){ gnames()[g]=el.value; touch(); render(); };
+});
+refreshGroupInputs();
+
+Array.prototype.forEach.call(document.querySelectorAll(".gb"),function(b){
+    var t=b.querySelector(".gname"); if(t) t.textContent=gname(b.dataset.g).slice(0,5); });
+}
+function refreshGroupInputs(){
+  document.getElementById("gn-A").value=gnames().A||"";
+  document.getElementById("gn-B").value=gnames().B||"";
+}
 function touch(){data.updated=Date.now();save();if(window.__schedule)window.__schedule();}
 
 function ymd(d){var z=function(n){return(n<10?"0":"")+n;};
@@ -153,25 +204,28 @@ function jp(s){var p=s.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]);
 var cur=ymd(new Date());
 var dateEl=document.getElementById("date");dateEl.value=cur;
 function shift(n){var p=cur.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]);
-  d.setDate(d.getDate()+n);cur=ymd(d);dateEl.value=cur;render();}
+  d.setDate(d.getDate()+n);cur=ymd(d);dateEl.value=cur;refreshGroupInputs();render();}
 document.getElementById("prev").onclick=function(){shift(-1);};
 document.getElementById("next").onclick=function(){shift(1);};
-document.getElementById("today").onclick=function(){cur=ymd(new Date());dateEl.value=cur;render();};
-dateEl.onchange=function(){if(dateEl.value){cur=dateEl.value;render();}};
+document.getElementById("today").onclick=function(){cur=ymd(new Date());dateEl.value=cur;refreshGroupInputs();render();};
+dateEl.onchange=function(){if(dateEl.value){cur=dateEl.value;refreshGroupInputs();render();}};
 
 function day(){if(!data.days[cur])data.days[cur]={};return data.days[cur];}
 function k(c,s,i){return c+"|"+s+"|"+i;}
 
 function render(){
+  refreshGroupLabels();
   var list=document.getElementById("list");list.innerHTML="";
   var zero=[];
   Object.keys(data.inv).forEach(function(cat){
-    var it=data.inv[cat],out=0,tot=0;
+    var it=data.inv[cat],out=0,tot=0,na=0,nb=0;
     it.sizes.forEach(function(s){tot+=s[1];
-      for(var i=1;i<=s[1];i++) if(day()[k(cat,s[0],i)]) out++;});
+      for(var i=1;i<=s[1];i++){ var vv=day()[k(cat,s[0],i)];
+        if(vv){ out++; if(vv==="A")na++; else if(vv==="B")nb++; } }});
+    var brk=(na||nb)?'（'+(na?gname("A")+na:'')+(na&&nb?' / ':'')+(nb?gname("B")+nb:'')+'）':'';
     var card=document.createElement("div");card.className="card";
     var h=document.createElement("h2");
-    h.innerHTML='<span>'+it.label+'</span><span class="sum">持出 '+out+' / '+tot+it.unit+'</span>';
+    h.innerHTML='<span>'+it.label+'</span><span class="sum">持出 '+out+brk+' / '+tot+it.unit+'</span>';
     card.appendChild(h);
     it.sizes.forEach(function(s){
       var size=s[0],qty=s[1],used=0,i;
@@ -179,22 +233,31 @@ function render(){
       var left=qty-used;
       if(left<=0&&qty>0) zero.push(it.label+" "+size);
       var row=document.createElement("div");row.className="row";
-      var head=document.createElement("div");head.className="rowhead";
-      head.innerHTML='<span class="size">'+size+'</span>'+
-        '<span class="left'+(left<=0?" zero":"")+'">残り <b>'+left+'</b> / '+qty+it.unit+'</span>';
-      row.appendChild(head);
+      var lab=document.createElement("span");lab.className="size";
+      lab.textContent=size.replace(/\s+\d+-\d+$/,"");
+      row.appendChild(lab);
       var chips=document.createElement("div");chips.className="chips";
       for(i=1;i<=qty;i++){
         (function(i){
-          var key=k(cat,size,i),on=!!day()[key];
+          var key=k(cat,size,i),v=day()[key];
           var b=document.createElement("button");
-          b.className="chip"+(on?" on":"");
-          b.innerHTML='<span>'+i+'</span>'+(on?'<span class="mk">出</span>':'');
-          b.onclick=function(){ if(day()[key]) delete day()[key]; else day()[key]=1; touch(); render(); };
+          b.className="chip"+(v?" "+gcls(v):"");
+          b.innerHTML='<span>'+i+'</span>'+(v?'<span class="mk">'+glabel(v)+'</span>':'');
+          b.onclick=function(){
+            var cv=day()[key], now=(grp==="X"?1:grp);
+            if(!cv) day()[key]=now;                 /* 空き → 今のグループで持ち出し */
+            else if(String(cv)===String(now)) delete day()[key];   /* 同じ → 返却 */
+            else day()[key]=now;                    /* 違うグループ → 付け替え */
+            touch(); render();
+          };
           chips.appendChild(b);
         })(i);
       }
-      row.appendChild(chips);card.appendChild(row);
+      row.appendChild(chips);
+      var lf=document.createElement("span");lf.className="left"+(left<=0?" zero":"");
+      lf.innerHTML='残 <b>'+left+'</b>/'+qty;
+      row.appendChild(lf);
+      card.appendChild(row);
     });
     list.appendChild(card);
   });
@@ -228,6 +291,21 @@ function render(){
     e.appendChild(tbl);
   });
 }
+["A","B"].forEach(function(g){
+  var el=document.getElementById("gn-"+g);
+  el.oninput=function(){ gnames()[g]=el.value; touch(); render(); };
+});
+refreshGroupInputs();
+
+Array.prototype.forEach.call(document.querySelectorAll(".gb"),function(b){
+  if(b.dataset.g===grp) b.classList.add("sel"); else b.classList.remove("sel");
+  b.onclick=function(){
+    grp=b.dataset.g; set(GKEY,grp);
+    Array.prototype.forEach.call(document.querySelectorAll(".gb"),function(x){
+      x.classList.toggle("sel",x.dataset.g===grp); });
+  };
+});
+
 document.getElementById("reset").onclick=function(){
   if(!confirm(jp(cur)+" のチェックを全部戻します。よろしいですか？"))return;
   data.days[cur]={};touch();render();
@@ -291,6 +369,7 @@ function push(){
   }).then(function(r){
     if(!r) return;
     if(r.status===401||r.status===403){ st("トークンが違うか、権限が足りません","err"); return; }
+    if(r.status===404){ st("リポジトリ名か、トークンの対象リポジトリが違います","err"); return; }
     if(!r.ok){ st("保存エラー "+r.status,"err"); return; }
     return r.json().then(function(j){ sha=j.content.sha; st("GitHubに保存しました "+stamp(),"ok"); });
   }).catch(function(e){ st("通信できません（電波を確認）","err"); });
